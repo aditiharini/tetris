@@ -1,7 +1,6 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.math.Rectangle;
-import org.w3c.dom.css.Rect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,28 +9,94 @@ import java.util.List;
  * Created by aditisri on 12/23/17.
  */
 public class BoundFactory {
-    public static List<Rectangle> getBounds(Shape s, float unitSize, float startx, float starty){
-        List<Rectangle> bounds = new ArrayList<Rectangle>();
+
+    public static Rectangle getVerticalBound(Shape s, Orientation o, float unitSize, float startx, float starty){
         switch(s){
             case I:
-                bounds.add(new Rectangle(startx, starty, unitSize, 4*unitSize));
-                break;
+                if(o == Orientation.UP || o == Orientation.DOWN){
+                    return new Rectangle(startx, starty, unitSize, 4*unitSize);
+                }
+                else{
+                    return new Rectangle(startx, starty, 0, 0);
+                }
             case L:
-                bounds.add(new Rectangle(startx, starty, unitSize, 3*unitSize));
-                bounds.add(new Rectangle(startx + unitSize, starty, unitSize, unitSize));
-                break;
+                switch(o){
+                    case UP:
+                        return new Rectangle(startx, starty, unitSize, 3 * unitSize);
+                    case RIGHT:
+                        return new Rectangle(startx, starty, 3*unitSize, unitSize);
+                    case DOWN:
+                        return new Rectangle(startx + unitSize, starty, unitSize, 3*unitSize);
+                    case LEFT:
+                        return new Rectangle(startx, starty + unitSize, 3*unitSize, unitSize);
+                }
             case T:
-                bounds.add(new Rectangle(startx, starty, unitSize*3, unitSize));
-                bounds.add(new Rectangle(startx + unitSize, starty + unitSize, unitSize, unitSize));
-                break;
+                switch(o){
+                    case UP:
+                        return new Rectangle(startx, starty, unitSize*3, unitSize);
+                    case RIGHT:
+                        return new Rectangle(startx + unitSize, starty, unitSize, 3*unitSize);
+                    case DOWN:
+                        return new Rectangle(startx, starty + unitSize, 3*unitSize, unitSize);
+                    case LEFT:
+                        return new Rectangle(startx, starty, unitSize, 3*unitSize);
+                }
             case R:
-                bounds.add(new Rectangle(startx, starty, unitSize*2, unitSize*2));
-                break;
+                return new Rectangle(startx, starty, 0, 0);
             case S:
-                bounds.add(new Rectangle(startx, starty, unitSize*2, unitSize));
-                bounds.add(new Rectangle(startx + unitSize, starty + unitSize, unitSize*2, unitSize));
-                break;
+                if (o == Orientation.UP || o == Orientation.DOWN){
+                    return new Rectangle(startx, starty, unitSize * 2, unitSize);
+                }
+                else{
+                    return new Rectangle(startx, starty + unitSize, unitSize, unitSize*2);
+
+                }
         }
-        return bounds;
+        return null;
+
+    }
+
+
+    public static Rectangle getHorizontalBound(Shape s, Orientation o, float unitSize, float startx, float starty){
+        switch(s){
+            case I:
+                if(o == Orientation.LEFT || o == Orientation.RIGHT)
+                    return new Rectangle(startx, starty, 4*unitSize, unitSize);
+                else{
+                    return new Rectangle(startx, starty, 0, 0);
+                }
+            case L:
+                switch(o){
+                    case UP:
+                        return new Rectangle(startx, starty, 2*unitSize, unitSize);
+                    case RIGHT:
+                        return new Rectangle(startx + 2*unitSize, starty , unitSize, 2*unitSize);
+                    case DOWN:
+                        return new Rectangle(startx, starty + 2*unitSize, 2*unitSize, unitSize);
+                    case LEFT:
+                        return new Rectangle(startx, starty, unitSize, 2*unitSize);
+                }
+            case T:
+                switch (o){
+                    case UP:
+                        return new Rectangle(startx + unitSize, starty + unitSize, unitSize, unitSize);
+                    case RIGHT:
+                        return new Rectangle(startx, starty + unitSize, unitSize, unitSize);
+                    case DOWN:
+                        return new Rectangle(startx+unitSize, starty, unitSize, unitSize);
+                    case LEFT:
+                        return new Rectangle(startx+unitSize, starty+unitSize, unitSize, unitSize);
+                }
+            case R:
+                return new Rectangle(startx, starty, unitSize*2, unitSize*2);
+            case S:
+                if(o == Orientation.DOWN || o == Orientation.UP) {
+                    return new Rectangle(startx + unitSize, starty + unitSize, unitSize * 2, unitSize);
+                }
+                else if(o == Orientation.LEFT | o == Orientation.RIGHT){
+                    return new Rectangle(startx + unitSize, starty, unitSize, unitSize*2);
+                }
+        }
+        return null;
     }
 }

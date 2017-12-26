@@ -13,13 +13,17 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TetrisGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	Tetromino fallingPiece;
 	static int NUM_UPDATES_PER_FRAME = 3;
 	private long currentTime;
-	private List<Tetromino> landedPieces;
+	public static List<Tetromino> landedPieces;
+	private Lock turnLock;
+	private Grid grid;
 
 	@Override
 	public void create () {
@@ -29,6 +33,8 @@ public class TetrisGame extends ApplicationAdapter {
 		Gdx.graphics.setContinuousRendering(false);
 		Gdx.graphics.requestRendering();
 		currentTime = System.currentTimeMillis();
+		turnLock = new ReentrantLock();
+		grid = new Grid(40*0.5f);
 	}
 
 	@Override
@@ -42,12 +48,12 @@ public class TetrisGame extends ApplicationAdapter {
             fallingPiece = new Tetromino(200, 450, Color.CYAN);
 			Gdx.input.setInputProcessor(new UIHandler(fallingPiece));
         }
+        grid.draw();
 
 //		int updateCount = 0;
 //		while(frameTime > 0f && updateCount < NUM_UPDATES_PER_FRAME){
 //		    float deltaTime = Math.min(frameTime, 1f/60f);
 
-        fallingPiece.updateDown();
 //
 //		while(System.currentTimeMillis()-currentTime < 1000) {
 //			if (updateCount<NUM_UPDATES_PER_FRAME) fallingPiece.updateDown();
@@ -57,13 +63,15 @@ public class TetrisGame extends ApplicationAdapter {
 //		    updateCount++;
 //        }
 
-        for(Tetromino t: landedPieces){
-		    if(fallingPiece.collidesWith(t)){
-		        fallingPiece.handleCollision(t);
-            }
-        }
+//        for(Tetromino t: landedPieces){
+//		    if(fallingPiece.collidesWith(t)){
+//		        fallingPiece.handleCollision(t);
+//            }
+//        }
+		turnLock.lock();
 
 		batch.begin();
+		fallingPiece.move(Move.DOWN);
 		for(Tetromino t:landedPieces){
 		    t.draw(batch);
         }
@@ -75,6 +83,7 @@ public class TetrisGame extends ApplicationAdapter {
         }
 
 		batch.end();
+        turnLock.unlock();
 
 	}
 	

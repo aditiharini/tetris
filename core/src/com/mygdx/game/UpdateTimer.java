@@ -19,7 +19,7 @@ public class UpdateTimer implements Runnable{
         while(fallingPiece.isFalling()){
             if((System.currentTimeMillis()-startTime)%Tetromino.timestep == 0) {
                 fallingPiece.setShouldMoveDown(true);
-//                fallingPiece.setCurrentMove(Move.DOWN);
+//                fallingPiece.move(Move.DOWN);
                 Gdx.graphics.requestRendering();
             }
         }

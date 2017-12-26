@@ -17,20 +17,21 @@ public class UIHandler extends InputAdapter{
     public boolean keyDown(int keycode) {
         switch(keycode){
             case Input.Keys.H:
-                fallingPiece.rotateCounterClockwise();
+                fallingPiece.move(Move.TURN_LEFT);
                 break;
             case Input.Keys.SEMICOLON:
-                fallingPiece.rotateClockwise();
+                fallingPiece.move(Move.TURN_RIGHT);
                 break;
             case Input.Keys.L:
-                fallingPiece.updateRight();
+                fallingPiece.move(Move.RIGHT);
                 break;
             case Input.Keys.J:
-                fallingPiece.updateLeft();
+                fallingPiece.move(Move.LEFT);
                 break;
             case Input.Keys.K:
                 fallingPiece.setShouldMoveDown(true);
-                fallingPiece.updateDown();
+                fallingPiece.move(Move.DOWN);
+//                fallingPiece.updateDown();
 
         }
         return true;
