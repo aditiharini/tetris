@@ -24,6 +24,22 @@ public class Bounds {
         this.horizontal = BoundFactory.getHorizontalBound(this.shape, this.orientation, this.unitSize, startx, starty);
     }
 
+    public Rectangle getVerticalBound(){
+        return this.vertical;
+    }
+
+    public Rectangle getHorizontalBound(){
+        return this.horizontal;
+    }
+
+    public Shape getShape(){
+        return this.shape;
+    }
+
+    public Orientation getOrientation(){
+        return this.orientation;
+    }
+
     public float getMinX(){
         return Math.min(vertical.x, horizontal.x);
     }

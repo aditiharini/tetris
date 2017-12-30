@@ -53,7 +53,6 @@ public class Tetromino {
 
     public void move(Move m){
         updateLock.lock();
-        System.out.println("start");
         this.currentMove = m;
         switch(m){
             case LEFT:
@@ -76,12 +75,12 @@ public class Tetromino {
                 rotateCounterClockwise();
                 break;
         }
-        this.fixCollisions(TetrisGame.landedPieces);
-        System.out.println("finish");
+        this.fixCollisions(TetrisGame.grid, TetrisGame.landedPieces);
         updateLock.unlock();
     }
 
-    public void fixCollisions(List<Tetromino> allPieces){
+    public void fixCollisions(Grid grid, List<Tetromino> allPieces){
+
         for(Tetromino t : allPieces){
             if (this.collidesWith(t))
                 this.handleCollision(t);
@@ -231,7 +230,5 @@ public class Tetromino {
         this.fill.draw(batch);
 
     }
-
-
 
 }

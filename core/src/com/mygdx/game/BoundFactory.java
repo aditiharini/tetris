@@ -3,7 +3,9 @@ package com.mygdx.game;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by aditisri on 12/23/17.
@@ -22,11 +24,11 @@ public class BoundFactory {
             case L:
                 switch(o){
                     case UP:
-                        return new Rectangle(startx, starty, unitSize, 3 * unitSize);
+                        return new Rectangle(startx, starty+unitSize, unitSize, 2 * unitSize);
                     case RIGHT:
                         return new Rectangle(startx, starty, 3*unitSize, unitSize);
                     case DOWN:
-                        return new Rectangle(startx + unitSize, starty, unitSize, 3*unitSize);
+                        return new Rectangle(startx + unitSize, starty, unitSize, 2*unitSize);
                     case LEFT:
                         return new Rectangle(startx, starty + unitSize, 3*unitSize, unitSize);
                 }
@@ -70,11 +72,11 @@ public class BoundFactory {
                     case UP:
                         return new Rectangle(startx, starty, 2*unitSize, unitSize);
                     case RIGHT:
-                        return new Rectangle(startx + 2*unitSize, starty , unitSize, 2*unitSize);
+                        return new Rectangle(startx + 2*unitSize, starty + unitSize, unitSize, unitSize);
                     case DOWN:
                         return new Rectangle(startx, starty + 2*unitSize, 2*unitSize, unitSize);
                     case LEFT:
-                        return new Rectangle(startx, starty, unitSize, 2*unitSize);
+                        return new Rectangle(startx, starty, unitSize, unitSize);
                 }
             case T:
                 switch (o){
@@ -99,4 +101,5 @@ public class BoundFactory {
         }
         return null;
     }
+
 }

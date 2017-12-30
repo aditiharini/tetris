@@ -23,7 +23,7 @@ public class TetrisGame extends ApplicationAdapter {
 	private long currentTime;
 	public static List<Tetromino> landedPieces;
 	private Lock turnLock;
-	private Grid grid;
+	public static Grid grid;
 
 	@Override
 	public void create () {
@@ -41,8 +41,6 @@ public class TetrisGame extends ApplicationAdapter {
 	public void render () {
 		Gdx.gl.glClearColor(0, 0, 0 ,1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//		long newTime = System.currentTimeMillis();
-//		float frameTime = (newTime-currentTime)/1000f;
 		currentTime = System.currentTimeMillis();
         if(fallingPiece == null ){
             fallingPiece = new Tetromino(200, 450, Color.CYAN);
@@ -50,35 +48,15 @@ public class TetrisGame extends ApplicationAdapter {
         }
         grid.draw();
 
-//		int updateCount = 0;
-//		while(frameTime > 0f && updateCount < NUM_UPDATES_PER_FRAME){
-//		    float deltaTime = Math.min(frameTime, 1f/60f);
 
-//
-//		while(System.currentTimeMillis()-currentTime < 1000) {
-//			if (updateCount<NUM_UPDATES_PER_FRAME) fallingPiece.updateDown();
-//		    updateCount++;
-//		}
-//		    frameTime -= deltaTime;
-//		    updateCount++;
-//        }
-
-//        for(Tetromino t: landedPieces){
-//		    if(fallingPiece.collidesWith(t)){
-//		        fallingPiece.handleCollision(t);
-//            }
-//        }
 		turnLock.lock();
 
 		batch.begin();
 		fallingPiece.move(Move.DOWN);
-		for(Tetromino t:landedPieces){
-		    t.draw(batch);
-        }
 		fallingPiece.draw(batch);
 
         if (!fallingPiece.isFalling()){
-            landedPieces.add(fallingPiece);
+            grid.addPiece(fallingPiece);
             fallingPiece = null;
         }
 
