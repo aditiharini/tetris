@@ -32,6 +32,14 @@ public class Bounds {
         return this.horizontal;
     }
 
+    public int getRow(){
+        return (int)(this.getMinY()/unitSize);
+    }
+
+    public int getCol(){
+        return (int)(this.getMinX()/unitSize);
+    }
+
     public Shape getShape(){
         return this.shape;
     }
@@ -53,7 +61,7 @@ public class Bounds {
     }
 
     public float getMaxX(){
-        return Math.max(vertical.x, horizontal.x);
+        return Math.max(vertical.x+vertical.width, horizontal.x+horizontal.width);
     }
 
 
@@ -65,6 +73,10 @@ public class Bounds {
 
         this.vertical = BoundFactory.getVerticalBound(this.shape, this.orientation, this.unitSize, x, y);
         this.horizontal = BoundFactory.getHorizontalBound(this.shape, this.orientation, this.unitSize, x, y);
+    }
+
+    public boolean overlaps(Rectangle other){
+        return this.horizontal.overlaps(other) || this.vertical.overlaps(other);
     }
 
     public boolean overlaps(Bounds other){
@@ -126,8 +138,8 @@ public class Bounds {
             updateUp(getYTranslateDistance(0));
         if (this.getMinX() < 0)
             updateRight(getXTranslateDistance(0));
-        if (this.getMaxX() > Gdx.graphics.getWidth()-getWidth())
-            updateRight(getXTranslateDistance(Gdx.graphics.getWidth()-getWidth()));
+        if (this.getMaxX() > Gdx.graphics.getWidth())
+            updateRight(Gdx.graphics.getWidth()-this.getMaxX());
     }
 
     public void printBounds(){

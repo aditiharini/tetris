@@ -43,22 +43,31 @@ public class TetrisGame extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		currentTime = System.currentTimeMillis();
         if(fallingPiece == null ){
-            fallingPiece = new Tetromino(200, 450, Color.CYAN);
+            fallingPiece = new Tetromino(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight(), Color.CYAN);
 			Gdx.input.setInputProcessor(new UIHandler(fallingPiece));
         }
-        grid.draw();
+
+        grid.drawBackground();
 
 
 		turnLock.lock();
 
 		batch.begin();
 		fallingPiece.move(Move.DOWN);
+		grid.draw(batch);
 		fallingPiece.draw(batch);
+//		for(Tetromino t : landedPieces){
+//			t.draw(batch);
+//		}
+        this.grid.handleDeletions();
 
         if (!fallingPiece.isFalling()){
+			landedPieces.add(fallingPiece);
             grid.addPiece(fallingPiece);
             fallingPiece = null;
         }
+
+
 
 		batch.end();
         turnLock.unlock();

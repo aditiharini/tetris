@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import org.w3c.dom.css.Rect;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -22,7 +23,7 @@ public class Tetromino {
     public static float timestep = 1000;
     public static float scale = 0.5f;
     public static float unitSize = 40f*scale;
-    private Sprite fill;
+    public Sprite fill;
     private int height;
     private int width;
     private float speed;
@@ -80,11 +81,17 @@ public class Tetromino {
     }
 
     public void fixCollisions(Grid grid, List<Tetromino> allPieces){
-
-        for(Tetromino t : allPieces){
-            if (this.collidesWith(t))
-                this.handleCollision(t);
+        Set<Square> possibleCollisions = grid.getRelevantSquares((int)(this.bounds.getMinX()/unitSize), (int)(this.bounds.getMinY()/unitSize));
+        for(Square s: possibleCollisions){
+            if(this.bounds.overlaps(s.getBound())){
+                this.handleCollision(s);
+            }
         }
+
+//        for(Tetromino t : allPieces){
+//            if (this.collidesWith(t))
+//                this.handleCollision();
+//        }
     }
 
 
@@ -192,23 +199,33 @@ public class Tetromino {
         if (this.fill.getBoundingRectangle().getX() < 0) {
             this.fill.translateX(-this.fill.getBoundingRectangle().getX());
         }
-        if(this.fill.getBoundingRectangle().getX() > Gdx.graphics.getWidth()-this.width){
-            this.fill.translateX(Gdx.graphics.getWidth()-this.fill.getBoundingRectangle().getX());
+        if(this.fill.getBoundingRectangle().getX() +this.fill.getBoundingRectangle().width > Gdx.graphics.getWidth()){
+            this.fill.translateX(-getStepDistance());
+//            this.fill.translateX(Gdx.graphics.getWidth()-(this.fill.getBoundingRectangle().getX()+this.fill.getBoundingRectangle().width));
         }
 
+    }
+
+    public boolean isRestingOn(Square s){
+        this.updateDown();
+        boolean overlaps = this.bounds.overlaps(s.getBound());
+        this.updateUp();
+        return overlaps;
     }
 
     public boolean collidesWith(Tetromino other){
        return this.bounds.overlaps(other.bounds);
     }
 
-    public void handleCollision(Tetromino other){
+    public void handleCollision(Square s){
         this.undoPrevMove();
         if(this.bounds.getMaxY() > Gdx.graphics.getHeight()){
             System.out.println("game over");
             System.exit(1);
         }
-        this.isFalling = false;
+        if(this.isRestingOn(s)) {
+            this.isFalling = false;
+        }
 
     }
 
@@ -226,8 +243,8 @@ public class Tetromino {
 
 
     public void draw(SpriteBatch batch){
-        this.bounds.drawBounds(batch);
         this.fill.draw(batch);
+        this.bounds.drawBounds(batch);
 
     }
 
