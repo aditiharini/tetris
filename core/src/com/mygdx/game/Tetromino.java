@@ -33,6 +33,7 @@ public class Tetromino {
     public Move currentMove;
     public Bounds bounds;
     public Shape shape;
+    private UpdateTimer timer;
 
 
 
@@ -44,9 +45,10 @@ public class Tetromino {
         this.bounds = new Bounds(this.shape, Orientation.UP, unitSize, this.fill.getBoundingRectangle().x, this.fill.getBoundingRectangle().y);
 //        this.height = (int)this.getBound().getHeight();
 //        this.width = (int)this.getBound().getWidth();
-        this.speed = unitSize/1000f;
+        this.speed = (unitSize/timestep);
         this.isFalling = true;
-        Thread t = new Thread(new UpdateTimer(this));
+        this.timer = new UpdateTimer(this);
+        Thread t = new Thread(this.timer);
         t.start();
         updateLock = new ReentrantLock();
         currentMove = null;
@@ -77,6 +79,12 @@ public class Tetromino {
                 break;
         }
         this.fixCollisions(TetrisGame.grid, TetrisGame.landedPieces);
+        if (!this.timer.isRunning()){
+            this.timer.resume();
+            this.timer = new UpdateTimer(this);
+            Thread t = new Thread(this.timer);
+            t.start();
+        }
         updateLock.unlock();
     }
 
@@ -123,6 +131,7 @@ public class Tetromino {
     }
 
     public void updateRight(){
+        System.out.println("got to update right");
         this.currentMove = Move.RIGHT;
         this.fill.translateX(getStepDistance());
         this.bounds.updateRight(getStepDistance());
@@ -168,6 +177,7 @@ public class Tetromino {
 
 
     public void updateDown(){
+        System.out.println("got to update down");
         this.currentMove = Move.DOWN;
         this.fill.translateY(-getStepDistance());
         this.bounds.updateDown(getStepDistance());

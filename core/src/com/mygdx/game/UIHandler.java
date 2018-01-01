@@ -23,12 +23,14 @@ public class UIHandler extends InputAdapter{
                 fallingPiece.move(Move.TURN_RIGHT);
                 break;
             case Input.Keys.L:
+                System.out.println("right key down");
                 fallingPiece.move(Move.RIGHT);
                 break;
             case Input.Keys.J:
                 fallingPiece.move(Move.LEFT);
                 break;
             case Input.Keys.K:
+                System.out.println("down key down");
                 fallingPiece.setShouldMoveDown(true);
                 fallingPiece.move(Move.DOWN);
 //                fallingPiece.updateDown();
