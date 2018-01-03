@@ -1,15 +1,8 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import org.w3c.dom.css.Rect;
 
 import java.util.List;
 import java.util.Set;
@@ -23,28 +16,26 @@ public class Tetromino {
     public static float timestep = 1000;
     public static float scale = 0.5f;
     public static float unitSize = 40f*scale;
-    public Sprite fill;
-    private int height;
-    private int width;
     private float speed;
     private boolean isFalling;
     private boolean shouldMoveDown;
     public Lock updateLock;
     public Move currentMove;
-    public Bounds bounds;
     public Shape shape;
     private UpdateTimer timer;
+    private boolean isGameOver;
+    private Set<Square> squares;
+    private Orientation orientation;
+    private TetrisColor color;
 
 
 
     public Tetromino(float startx, float starty, Color color){
         this.shape = Shape.values()[(int)(Shape.values().length * Math.random())];
-        this.fill = this.createTexture(startx, starty, null);
+        this.color = TetrisColor.values()[(int)(TetrisColor.values().length * Math.random())];
+        this.squares = TetrominoFactory.getTetromino(this.shape, this.color, startx, starty, unitSize);
 
         this.shouldMoveDown = false;
-        this.bounds = new Bounds(this.shape, Orientation.UP, unitSize, this.fill.getBoundingRectangle().x, this.fill.getBoundingRectangle().y);
-//        this.height = (int)this.getBound().getHeight();
-//        this.width = (int)this.getBound().getWidth();
         this.speed = (unitSize/timestep);
         this.isFalling = true;
         this.timer = new UpdateTimer(this);
@@ -52,10 +43,65 @@ public class Tetromino {
         t.start();
         updateLock = new ReentrantLock();
         currentMove = null;
+        isGameOver = false;
+        this.orientation = Orientation.UP;
     }
+
+    public float getMinX(){
+        float minX = Float.MAX_VALUE;
+        for (Square s: this.squares){
+            Math.min(s.getX(), minX);
+        }
+        return minX;
+    }
+
+    public float getMinY(){
+        float minY = Float.MIN_VALUE;
+        for(Square s: this.squares){
+            Math.min(s.getY(), minY);
+        }
+        return minY;
+    }
+
+    public int getMinCol(){
+        int col = Integer.MAX_VALUE;
+        for(Square s : this.squares){
+            col = Math.min(s.getCol(), col);
+        }
+        return col;
+    }
+
+    public int getMinRow(){
+        int row = Integer.MAX_VALUE;
+        for(Square s : this.squares){
+            row = Math.min(s.getRow(), row);
+        }
+        return row;
+    }
+
+    public int getMaxRow(){
+        int row = Integer.MIN_VALUE;
+        for(Square s : this.squares){
+            row = Math.max(s.getRow(), row);
+        }
+        return row;
+    }
+
+    public int getMaxCol(){
+        int col = Integer.MIN_VALUE;
+        for (Square s : this.squares){
+            col = Math.max(s.getCol(), col);
+        }
+        return col;
+    }
+
+
 
     public void move(Move m){
         updateLock.lock();
+        if(!isFalling()){
+            return;
+        }
         this.currentMove = m;
         switch(m){
             case LEFT:
@@ -88,18 +134,22 @@ public class Tetromino {
         updateLock.unlock();
     }
 
+    public Set<Square> getSquares(){
+        return this.squares;
+    }
+
     public void fixCollisions(Grid grid, List<Tetromino> allPieces){
-        Set<Square> possibleCollisions = grid.getRelevantSquares((int)(this.bounds.getMinX()/unitSize), (int)(this.bounds.getMinY()/unitSize));
-        for(Square s: possibleCollisions){
-            if(this.bounds.overlaps(s.getBound())){
-                this.handleCollision(s);
+        Set<Square> possibleCollisions = grid.getRelevantSquares(0, 0);
+        for(Square s1: possibleCollisions){
+            for(Square s2 : this.squares){
+                if(s2.isRestingOn(s1)){
+                    this.isFalling = false;
+                }
+                if(s1.collidesWith(s2)){
+                    this.handleCollision(s1);
+                }
             }
         }
-
-//        for(Tetromino t : allPieces){
-//            if (this.collidesWith(t))
-//                this.handleCollision();
-//        }
     }
 
 
@@ -108,35 +158,44 @@ public class Tetromino {
         this.shouldMoveDown = shouldMove;
     }
 
+
     public void rotateCounterClockwise(){
         this.currentMove = Move.TURN_LEFT;
-        this.fill.rotate(-90);
-        this.bounds.rotate(false, this.fill.getBoundingRectangle().x, this.fill.getBoundingRectangle().y);
+        int maxCol = getMaxCol();
+        int minRow = getMinRow();
+        int minCol = getMinCol();
+        for(Square s : squares){
+            int colOffset = s.getRow()-minRow;
+            int rowOffset = s.getCol()-minCol;
+            s.setPosition(minRow + rowOffset, maxCol - colOffset);
+        }
+        this.orientation = this.orientation.getNextCounterClockwise();
         snapInBounds();
-        snapToGrid();
-//        System.out.println("fill " + this.fill.getBoundingRectangle().x + " " + this.fill.getBoundingRectangle().y);
-//        System.out.println("bounds " + this.bounds.getMinX() + " " + this.bounds.getMinY());
     }
 
 
 
     public void rotateClockwise(){
         this.currentMove = Move.TURN_RIGHT;
-        this.fill.rotate(90);
-        this.bounds.rotate(true, this.fill.getBoundingRectangle().x, this.fill.getBoundingRectangle().y);
+        int maxRow = getMaxRow();
+        int maxCol = getMaxCol();
+        int minRow = getMinRow();
+        for(Square s : squares){
+            int colOffset = maxRow - s.getRow();
+            int rowOffset = maxCol - s.getCol();
+            s.setPosition(minRow + rowOffset, maxCol - colOffset);
+        }
+        this.orientation = this.orientation.getNextClockwise();
         snapInBounds();
-        snapToGrid();
-//        System.out.println("fill " + this.fill.getBoundingRectangle().x + " " + this.fill.getBoundingRectangle().y);
-//        System.out.println("bounds " + this.bounds.getMinX() + " " + this.bounds.getMinY());
     }
 
     public void updateRight(){
         System.out.println("got to update right");
         this.currentMove = Move.RIGHT;
-        this.fill.translateX(getStepDistance());
-        this.bounds.updateRight(getStepDistance());
+        for(Square s: this.squares){
+            s.updateRight(getStepDistance());
+        }
         snapInBounds();
-        snapToGrid();
     }
 
     public float getStepDistance(){
@@ -145,14 +204,15 @@ public class Tetromino {
 
     public void updateLeft(){
         this.currentMove = Move.LEFT;
-        this.fill.translateX(-getStepDistance());
-        this.bounds.updateLeft(getStepDistance());
+        for(Square s: this.squares){
+            s.updateLeft(getStepDistance());
+        }
         snapInBounds();
-        snapToGrid();
 
     }
 
     public void undoPrevMove(){
+        System.out.println("got to undo");
         switch(this.currentMove){
             case LEFT:
                 this.updateRight();
@@ -164,6 +224,7 @@ public class Tetromino {
                 this.updateDown();
                 break;
             case DOWN:
+                System.out.println("got to undo down");
                 this.updateUp();
                 break;
             case TURN_RIGHT:
@@ -179,59 +240,76 @@ public class Tetromino {
     public void updateDown(){
         System.out.println("got to update down");
         this.currentMove = Move.DOWN;
-        this.fill.translateY(-getStepDistance());
-        this.bounds.updateDown(getStepDistance());
+        for(Square s: this.squares){
+            s.updateDown(getStepDistance());
+        }
         snapInBounds();
-        snapToGrid();
         this.setShouldMoveDown(false);
     }
 
     public void updateUp(){
-        this.fill.translateY(getStepDistance());
-        this.bounds.updateUp(getStepDistance());
+        for(Square s: this.squares){
+            s.updateUp(getStepDistance());
+        }
         snapInBounds();
-        snapToGrid();
-    }
-
-    public void snapToGrid(){
-        this.bounds.snapToGrid();
-        this.fill.translateY(this.fill.getBoundingRectangle().getY()%unitSize);
-        this.fill.translateX(this.fill.getBoundingRectangle().getX()%unitSize);
     }
 
 
-    public void snapInBounds(){
-        this.bounds.snapInBounds();
-        if(this.fill.getBoundingRectangle().getY() < 0){
-            this.isFalling = false;
-            this.fill.translateY(getStepDistance());
-        }
-        if (this.fill.getBoundingRectangle().getX() < 0) {
-            this.fill.translateX(-this.fill.getBoundingRectangle().getX());
-        }
-        if(this.fill.getBoundingRectangle().getX() +this.fill.getBoundingRectangle().width > Gdx.graphics.getWidth()){
-            this.fill.translateX(-getStepDistance());
-//            this.fill.translateX(Gdx.graphics.getWidth()-(this.fill.getBoundingRectangle().getX()+this.fill.getBoundingRectangle().width));
-        }
 
+    public boolean isInBounds(){
+        for(Square s : this.squares){
+            if (!s.isInBounds()){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean hitBottom(){
+        for(Square s : this.squares){
+            if(s.hitBottom()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public void snapInBounds() {
+        if (!isInBounds()) {
+            if (hitBottom()) {
+                this.isFalling = false;
+            }
+            this.undoPrevMove();
+        }
     }
 
     public boolean isRestingOn(Square s){
-        this.updateDown();
-        boolean overlaps = this.bounds.overlaps(s.getBound());
-        this.updateUp();
-        return overlaps;
+
+        for(Square s1 : this.squares){
+            if (s1.isRestingOn(s)){
+                return true;
+            }
+        }
+        return false;
     }
 
-    public boolean collidesWith(Tetromino other){
-       return this.bounds.overlaps(other.bounds);
+    public boolean isOverflowing(){
+        for(Square s : this.squares){
+            if(s.isOverflowing()){
+                return true;
+            }
+        }
+        return false;
     }
+
+
 
     public void handleCollision(Square s){
         this.undoPrevMove();
-        if(this.bounds.getMaxY() > Gdx.graphics.getHeight()){
+        if(this.isOverflowing()){
             System.out.println("game over");
-            System.exit(1);
+            isGameOver = true;
         }
         if(this.isRestingOn(s)) {
             this.isFalling = false;
@@ -239,22 +317,19 @@ public class Tetromino {
 
     }
 
+    public boolean isGameOver(){
+        return isGameOver;
+    }
+
     public boolean isFalling(){
         return this.isFalling;
     }
 
-    public Sprite createTexture(float startx, float starty, Color color){
-        Sprite fill = ShapeFactory.getShape(this.shape);
-        fill.setX(startx);
-        fill.setY(starty);
-        fill.setScale(scale, scale);
-        return fill;
-    }
-
 
     public void draw(SpriteBatch batch){
-        this.fill.draw(batch);
-        this.bounds.drawBounds(batch);
+        for(Square s: squares){
+            s.draw(batch);
+        }
 
     }
 

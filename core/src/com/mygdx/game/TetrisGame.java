@@ -82,9 +82,10 @@ public class TetrisGame extends ApplicationAdapter {
 			stage.draw();
 		}
 		else {
+
 			currentTime = System.currentTimeMillis();
 			if (fallingPiece == null) {
-				fallingPiece = new Tetromino(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight(), Color.CYAN);
+				fallingPiece = new Tetromino(Gdx.graphics.getWidth() / 2 - ((Gdx.graphics.getWidth() / 2)%20), Gdx.graphics.getHeight(), Color.CYAN);
 				Gdx.input.setInputProcessor(new UIHandler(fallingPiece));
 			}
 
@@ -102,10 +103,22 @@ public class TetrisGame extends ApplicationAdapter {
 //		}
 			this.grid.handleDeletions();
 
+			if(this.fallingPiece.isGameOver()){
+				newGameScreen = true;
+				grid = new Grid(40*0.5f);
+				landedPieces = new ArrayList<Tetromino>();
+				fallingPiece = null;
+				turnLock = new ReentrantLock();
+				Gdx.input.setInputProcessor(stage);
+				batch.end();
+				return;
+			}
+
 			if (!fallingPiece.isFalling()) {
 				landedPieces.add(fallingPiece);
 				grid.addPiece(fallingPiece);
 				fallingPiece = null;
+				Gdx.graphics.requestRendering();
 			}
 
 

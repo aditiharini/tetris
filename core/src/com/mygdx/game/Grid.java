@@ -22,6 +22,7 @@ public class Grid {
         this.unitSize = unitSize;
     }
 
+
     public int getNumCols() {
         return (int) (Gdx.graphics.getWidth() / unitSize);
     }
@@ -56,7 +57,7 @@ public class Grid {
     }
 
     public void addPiece(Tetromino t) {
-        for (Square s: this.getSquaresFromBounds(t.bounds, t.fill.getBoundingRectangle())){
+        for (Square s: t.getSquares()){
             if(!rows.containsKey(s.getRow())){
                 rows.put(s.getRow(), new HashSet<Square>());
             }
@@ -83,20 +84,6 @@ public class Grid {
         for (Set<Square> squareSet : this.rows.values()){
             relevantSquares.addAll(squareSet);
         }
-//        for (int i = row; i<= row+4; i++){
-//            if(!this.rows.containsKey(i)){
-//                continue;
-//            }
-//            Set<Square> s1 = this.rows.get(i);
-//            for (int j = col; j<= row+4; j++){
-//                if(!this.columns.containsKey(j)){
-//                    continue;
-//                }
-//                Set<Square> s2 = new HashSet<Square>(s1);
-//                s2.retainAll(this.columns.get(j));
-//                relevantSquares.addAll(s2);
-//            }
-//        }
         return relevantSquares;
     }
 
@@ -112,14 +99,13 @@ public class Grid {
             for(int j=i; j+1<this.getNumRows(); j++){
                 if (this.rows.containsKey(j+1)){
                     for(Square s: this.rows.get(j+1)){
-                        s.updateDown();
+                        s.updateDown(unitSize);
                     }
                     this.rows.put(j, this.rows.get(j+1));
                     this.rows.remove(j+1);
                 }
             }
         }
-        this.printRowCounts();
     }
 
     public boolean isRowFull(int row){
@@ -129,20 +115,6 @@ public class Grid {
         return this.rows.get(row).size() == this.getNumCols();
     }
 
-    public Set<Square> getSquaresFromBounds(Bounds b, Rectangle fill){
-        Set<Square> squares = new HashSet<Square>();
-        Rectangle[] rectangles = {b.getHorizontalBound(), b.getVerticalBound()};
-//        Rectangle[] rectangles = {fill};
-        for (Rectangle r: rectangles) {
-            for (float i = r.x; i < r.x + r.getWidth(); i += unitSize) {
-                for (float j = r.y; j < r.y + r.getHeight(); j += unitSize) {
-                    squares.add(new Square(i, j, unitSize, 0.5f));
-                }
-            }
-        }
-        return squares;
-
-    }
 
 
 }
