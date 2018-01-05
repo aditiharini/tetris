@@ -34,19 +34,6 @@ public class Square {
         return this.bound.y;
     }
 
-    public void rotate(boolean clockwise){
-        if(clockwise) {
-            this.fill.rotate(90);
-        }
-        else{
-            this.fill.rotate(-90);
-        }
-    }
-
-    public void setOrigin(float x, float y){
-        this.fill.setOrigin(x, y);
-    }
-
     public void alignFillWithBounds(){
         this.fill.translateX(this.bound.x - this.fill.getBoundingRectangle().x);
         this.fill.translateY(this.bound.y - this.fill.getBoundingRectangle().y);
@@ -136,8 +123,6 @@ public class Square {
         Texture t = new Texture(p);
         batch.draw(t, this.bound.getX(), this.bound.getY());
     }
-
-
 
 
 }

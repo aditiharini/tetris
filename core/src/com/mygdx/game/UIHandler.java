@@ -8,31 +8,31 @@ import com.badlogic.gdx.InputProcessor;
  * Created by aditisri on 12/21/17.
  */
 public class UIHandler extends InputAdapter{
-    private Tetromino fallingPiece;
-    public UIHandler(Tetromino t){
-        fallingPiece = t;
+    private TetrisGame game;
+    public UIHandler(TetrisGame t){
+        game = t;
     }
 
     @Override
     public boolean keyDown(int keycode) {
+        Tetromino t = game.getFallingPiece();
         switch(keycode){
             case Input.Keys.H:
-                fallingPiece.move(Move.TURN_LEFT);
+                t.move(Move.TURN_LEFT);
                 break;
             case Input.Keys.SEMICOLON:
-                fallingPiece.move(Move.TURN_RIGHT);
+                t.move(Move.TURN_RIGHT);
                 break;
             case Input.Keys.L:
                 System.out.println("right key down");
-                fallingPiece.move(Move.RIGHT);
+                t.move(Move.RIGHT);
                 break;
             case Input.Keys.J:
-                fallingPiece.move(Move.LEFT);
+                t.move(Move.LEFT);
                 break;
             case Input.Keys.K:
                 System.out.println("down key down");
-                fallingPiece.setShouldMoveDown(true);
-                fallingPiece.move(Move.DOWN);
+                t.move(Move.DOWN);
 //                fallingPiece.updateDown();
 
         }

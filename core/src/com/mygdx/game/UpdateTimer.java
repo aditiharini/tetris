@@ -1,38 +1,37 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL30;
 
 /**
  * Created by aditisri on 12/21/17.
  */
 public class UpdateTimer implements Runnable{
     private long startTime;
-    private Tetromino fallingPiece;
+    private TetrisGame game;
     private boolean isRunning;
-    public UpdateTimer(Tetromino t){
+    public UpdateTimer(TetrisGame game){
        startTime = System.currentTimeMillis();
-       fallingPiece = t;
        isRunning = true;
+       this.game = game;
     }
 
 
     @Override
     public void run() {
-        int count = 0;
-        while(fallingPiece.isFalling()){
-            if((System.currentTimeMillis()-startTime) > 0 && (System.currentTimeMillis()-startTime)%Tetromino.timestep == 0) {
-                fallingPiece.setShouldMoveDown(true);
-//                fallingPiece.move(Move.DOWN);
+        while(true){
+            if(!game.getIsGameActive()) break;
+            if(this.isRunning && (System.currentTimeMillis()-startTime) > 0 && (System.currentTimeMillis()-startTime)%game.timestep == 0) {
                 this.stop();
-                Gdx.graphics.requestRendering();
-                count++;
-                break;
+                Gdx.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        game.moveFallingPieceDown();
+                    }
+                });
+                this.resume();
             }
         }
-    }
-
-    public boolean isRunning(){
-        return isRunning;
     }
 
     public void stop(){

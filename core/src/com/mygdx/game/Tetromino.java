@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -18,29 +20,24 @@ public class Tetromino {
     public static float unitSize = 40f*scale;
     private float speed;
     private boolean isFalling;
-    private boolean shouldMoveDown;
     public Lock updateLock;
     public Move currentMove;
     public Shape shape;
-    private UpdateTimer timer;
     private boolean isGameOver;
     private Set<Square> squares;
     private Orientation orientation;
     private TetrisColor color;
+    private TetrisGame game;
 
 
 
-    public Tetromino(float startx, float starty, Color color){
+    public Tetromino(TetrisGame game, float startx, float starty){
+        this.game  = game;
         this.shape = Shape.values()[(int)(Shape.values().length * Math.random())];
         this.color = TetrisColor.values()[(int)(TetrisColor.values().length * Math.random())];
         this.squares = TetrominoFactory.getTetromino(this.shape, this.color, startx, starty, unitSize);
-
-        this.shouldMoveDown = false;
         this.speed = (unitSize/timestep);
         this.isFalling = true;
-        this.timer = new UpdateTimer(this);
-        Thread t = new Thread(this.timer);
-        t.start();
         updateLock = new ReentrantLock();
         currentMove = null;
         isGameOver = false;
@@ -114,8 +111,7 @@ public class Tetromino {
                 updateUp();
                 break;
             case DOWN:
-                if(shouldMoveDown)
-                    updateDown();
+                updateDown();
                 break;
             case TURN_RIGHT:
                 rotateClockwise();
@@ -124,13 +120,13 @@ public class Tetromino {
                 rotateCounterClockwise();
                 break;
         }
-        this.fixCollisions(TetrisGame.grid, TetrisGame.landedPieces);
-        if (!this.timer.isRunning()){
-            this.timer.resume();
-            this.timer = new UpdateTimer(this);
-            Thread t = new Thread(this.timer);
-            t.start();
+        this.fixCollisions(game.getGrid());
+        game.getGrid().handleDeletions();
+        if(!this.isFalling()){
+            game.getGrid().addPiece(this);
+            game.setNewFallingPiece();
         }
+        Gdx.graphics.requestRendering();
         updateLock.unlock();
     }
 
@@ -138,7 +134,7 @@ public class Tetromino {
         return this.squares;
     }
 
-    public void fixCollisions(Grid grid, List<Tetromino> allPieces){
+    public void fixCollisions(Grid grid){
         Set<Square> possibleCollisions = grid.getRelevantSquares(0, 0);
         for(Square s1: possibleCollisions){
             for(Square s2 : this.squares){
@@ -154,9 +150,6 @@ public class Tetromino {
 
 
 
-    public void setShouldMoveDown(boolean shouldMove){
-        this.shouldMoveDown = shouldMove;
-    }
 
 
     public void rotateCounterClockwise(){
@@ -244,7 +237,6 @@ public class Tetromino {
             s.updateDown(getStepDistance());
         }
         snapInBounds();
-        this.setShouldMoveDown(false);
     }
 
     public void updateUp(){
@@ -308,17 +300,13 @@ public class Tetromino {
     public void handleCollision(Square s){
         this.undoPrevMove();
         if(this.isOverflowing()){
-            System.out.println("game over");
-            isGameOver = true;
+            game.setIsGameActive(false);
+            game.handleGameOver();
         }
         if(this.isRestingOn(s)) {
             this.isFalling = false;
         }
 
-    }
-
-    public boolean isGameOver(){
-        return isGameOver;
     }
 
     public boolean isFalling(){
