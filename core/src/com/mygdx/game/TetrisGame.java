@@ -2,14 +2,11 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TetrisGame extends Game{
-	SpriteBatch batch;
 	private Tetromino fallingPiece;
-	private Lock turnLock;
 	public static Grid grid;
 	public UpdateTimer timer;
 	public static float timestep = 1000;
@@ -18,10 +15,8 @@ public class TetrisGame extends Game{
 	@Override
 	public void create () {
 		isGameActive = false;
-		batch = new SpriteBatch();
 		Gdx.graphics.setContinuousRendering(false);
 		Gdx.graphics.requestRendering();
-		turnLock = new ReentrantLock();
 		fallingPiece = new Tetromino(this, Gdx.graphics.getWidth() / 2 - ((Gdx.graphics.getWidth() / 2)%20), Gdx.graphics.getHeight());
 		grid = new Grid(40*0.5f);
 		timer = new UpdateTimer(this);
@@ -78,6 +73,5 @@ public class TetrisGame extends Game{
 	
 	@Override
 	public void dispose () {
-		batch.dispose();
 	}
 }

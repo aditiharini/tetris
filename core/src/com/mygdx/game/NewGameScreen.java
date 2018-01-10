@@ -13,6 +13,11 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonWriter;
+
+import java.net.InetAddress;
+import java.net.Socket;
 
 /**
  * Created by aditisri on 1/5/18.
@@ -53,6 +58,7 @@ public class NewGameScreen implements Screen {
         newGameButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent e, float x, float y){
+                CommunicationManager.sendMessage(Message.Type.NewGameRequest, InetAddress.getLocalHost(), 5000, InetAddress.getLocalHost(), 8000);
                 parent.setScreen(new GamePlayScreen(parent));
                 parent.setIsGameActive(true);
                 parent.startTimer();

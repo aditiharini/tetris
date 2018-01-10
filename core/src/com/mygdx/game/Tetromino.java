@@ -44,22 +44,6 @@ public class Tetromino {
         this.orientation = Orientation.UP;
     }
 
-    public float getMinX(){
-        float minX = Float.MAX_VALUE;
-        for (Square s: this.squares){
-            Math.min(s.getX(), minX);
-        }
-        return minX;
-    }
-
-    public float getMinY(){
-        float minY = Float.MIN_VALUE;
-        for(Square s: this.squares){
-            Math.min(s.getY(), minY);
-        }
-        return minY;
-    }
-
     public int getMinCol(){
         int col = Integer.MAX_VALUE;
         for(Square s : this.squares){
@@ -277,7 +261,6 @@ public class Tetromino {
     }
 
     public boolean isRestingOn(Square s){
-
         for(Square s1 : this.squares){
             if (s1.isRestingOn(s)){
                 return true;
